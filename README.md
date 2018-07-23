@@ -1,6 +1,5 @@
 # Simple Sniffer
-One Paragraph of project description goes here
-
+Simple Sniffer,
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
@@ -18,6 +17,23 @@ No specific installation needed
 
 ```
 sudo arp.py [interface]
+```
+
+### WORKING
+
+```
+HTTP
+FTP
+```
+### TODO
+```
+TELNET,
+Auth Basic
+LDAP
+SNMB
+NTM
+POP
+....
 ```
 
 ## Authors
