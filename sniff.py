@@ -14,13 +14,6 @@ usernames = ['']
 passwords = ['']
 
 
-def auth_basic(pkt):
-    data = packet[Raw].load
-    reg=re.search(r"Authorization: Basic ([a-zA-Z0-9\/+=]*)", str(data))
-    if reg:
-        token = reg.group(1)
-        print("HTTP Credentials found : "+base64.b64decode(token))
-
 def process_intercept(origin, dsthost, dstpath, dstmethod):
     print ("*"*69)
     print ('\n{0} just requested a {1} {2}{3}'.format(origin, dstmethod, dsthost, dstpath))
@@ -52,8 +45,8 @@ def check_for_ftp(pkt):
 		if pkt[TCP].dport == 21 or pkt[TCP].sport == 21:
 			return True
 		if pkt[TCP].dport == 80:
-                        Thread(target = process_tcp_packet(pkt)).start()
-                        Thread(target = auth_basic(pkt)).start()
+                        process_tcp_packet(pkt)
+                
 		else:
 			return False
 	else:
